@@ -8,12 +8,12 @@
 // Ayrıntılar: FIREBASE_SETUP.md
 // ======================================================
 const firebaseConfig = {
-    apiKey: "YAPISTIR",
-    authDomain: "YAPISTIR.firebaseapp.com",
-    projectId: "YAPISTIR",
-    storageBucket: "YAPISTIR.appspot.com",
-    messagingSenderId: "YAPISTIR",
-    appId: "YAPISTIR",
+    apiKey: "AIzaSyATAi5QVaov1ruZyvvUW-HZzK4SGvHndTg",
+    authDomain: "girelimmi-80aa7.firebaseapp.com",
+    projectId: "girelimmi-80aa7",
+    storageBucket: "girelimmi-80aa7.appspot.com",
+    messagingSenderId: "158448872492",
+    appId: "1:158448872492:web:6df5848a54dba6914ff589",
 };
 
 let auth = null, db = null, FB_READY = false;
