@@ -103,6 +103,10 @@ service cloud.firestore {
              && request.resource.data.bettingClosesAt == resource.data.bettingClosesAt
              && request.resource.data.resolvesAt == resource.data.resolvesAt
              && request.resource.data.options == resource.data.options
+             && request.resource.data.seed == resource.data.seed
+             && request.resource.data.commissionRate == resource.data.commissionRate
+             && request.resource.data.winningOption == resource.data.winningOption
+             && request.resource.data.creatorNick == resource.data.creatorNick
              && request.resource.data.totalPool > resource.data.totalPool
              && balAfter(me()) == balNow(me()) - (request.resource.data.totalPool - resource.data.totalPool)
              && balAfter(me()) >= 0 );
