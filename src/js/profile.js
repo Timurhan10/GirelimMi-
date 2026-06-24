@@ -6,13 +6,48 @@ let PROF = { user: null, profile: null };
 requireAuth(async (user, profile) => {
     PROF.user = user; PROF.profile = profile;
     const name = profile.nickname || profile.email;
-    document.getElementById("p-avatar").textContent = initials(name);
+    const admin = !!profile.isAdmin;
+    document.getElementById("p-avatar").innerHTML = avatarInner(profile);
     document.getElementById("p-name").textContent = name;
     document.getElementById("p-email").textContent = profile.email || "";
-    document.getElementById("p-balance").textContent = fmtNum(profile.balance);
-    document.getElementById("balance").textContent = fmtNum(profile.balance);
+    // Admin token'ı hiçbir yerde görünmesin.
+    document.getElementById("p-balance").textContent = admin ? "∞" : fmtNum(profile.balance);
+    document.getElementById("balance").textContent = admin ? "∞" : fmtNum(profile.balance);
     await renderMyBets(user.uid);
 });
+
+// ---------------- PROFİL FOTOĞRAFI ----------------
+// Görseli 128px kareye küçültüp JPEG dataURL olarak users/{uid}.photoURL alanına yazar.
+function resizeImageToDataURL(file, size) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        const url = URL.createObjectURL(file);
+        img.onload = () => {
+            URL.revokeObjectURL(url);
+            const canvas = document.createElement("canvas");
+            canvas.width = size; canvas.height = size;
+            const ctx = canvas.getContext("2d");
+            const min = Math.min(img.width, img.height);       // kare kırp (cover)
+            const sx = (img.width - min) / 2, sy = (img.height - min) / 2;
+            ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
+            resolve(canvas.toDataURL("image/jpeg", 0.82));
+        };
+        img.onerror = reject;
+        img.src = url;
+    });
+}
+
+async function uploadProfilePhoto(file) {
+    if (!file) return;
+    if (!file.type || !file.type.startsWith("image/")) { toast("Lütfen bir görsel dosyası seç.", "err"); return; }
+    try {
+        const dataUrl = await resizeImageToDataURL(file, 128);
+        await db.collection("users").doc(PROF.user.uid).update({ photoURL: dataUrl });
+        PROF.profile.photoURL = dataUrl;
+        document.getElementById("p-avatar").innerHTML = avatarInner(PROF.profile);
+        toast("Profil fotoğrafı güncellendi.", "ok");
+    } catch (e) { console.error("Foto yükleme hatası:", e); toast("Fotoğraf yüklenemedi.", "err"); }
+}
 
 async function renderMyBets(uid) {
     const el = document.getElementById("my-bets");
@@ -92,4 +127,5 @@ async function changePassword() {
 }
 
 window.changePassword = changePassword;
+window.uploadProfilePhoto = uploadProfilePhoto;
 window.logout = logout;

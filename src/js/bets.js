@@ -20,7 +20,7 @@ async function confirmBet() {
     if (!fbReadyGuard() || !activeBet.marketId) return;
     const amount = parseInt(document.getElementById("bet-amount").value);
     if (isNaN(amount) || amount <= 0) return toast("Geçerli bir miktar gir.", "err");
-    if (amount > (STATE.profile.balance || 0)) return toast("Yetersiz bakiye.", "err");
+    if (!STATE.isAdmin && amount > (STATE.profile.balance || 0)) return toast("Yetersiz bakiye.", "err");
 
     const btn = document.getElementById("bet-confirm");
     btn.disabled = true;
@@ -29,15 +29,20 @@ async function confirmBet() {
     const betRef = db.collection("bets").doc();
     try {
         await db.runTransaction(async (tx) => {
-            const [mSnap, uSnap] = await Promise.all([tx.get(marketRef), tx.get(userRef)]);
+            // Admin sınırsız: bakiye düşülmez; sadece havuz ve bahis kaydı güncellenir.
+            const mSnap = await tx.get(marketRef);
+            const uSnap = STATE.isAdmin ? null : await tx.get(userRef);
             if (!mSnap.exists) throw new Error("GirelimMi? bulunamadı.");
-            const m = mSnap.data(); const bal = uSnap.data().balance || 0;
+            const m = mSnap.data();
             if (marketStatus(m) !== "aktif") throw new Error("Bahis kapandı.");
-            if (amount > bal) throw new Error("Yetersiz bakiye.");
+            if (!STATE.isAdmin) {
+                const bal = uSnap.data().balance || 0;
+                if (amount > bal) throw new Error("Yetersiz bakiye.");
+                tx.update(userRef, { balance: bal - amount });
+            }
 
             const pools = Object.assign({}, m.pools || {});
             pools[activeBet.key] = (pools[activeBet.key] || 0) + amount;
-            tx.update(userRef, { balance: bal - amount });
             tx.update(marketRef, { pools, totalPool: (m.totalPool || 0) + amount });
             tx.set(betRef, {
                 marketId: activeBet.marketId, uid: STATE.user.uid,

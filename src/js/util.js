@@ -29,6 +29,13 @@ function initials(nameOrEmail) {
     return s.substring(0, 1).toUpperCase();
 }
 
+// .avatar kutusunun içeriği: foto varsa <img>, yoksa baş harf.
+function avatarInner(u) {
+    const photo = u && (u.photoURL || u.photo);
+    if (photo) return `<img class="avatar-img" src="${escapeHtml(photo)}" alt="">`;
+    return escapeHtml(initials((u && (u.nickname || u.email)) || ""));
+}
+
 function maskEmail(email) {
     if (!email || !email.includes("@")) return email || "";
     const [name, domain] = email.split("@");

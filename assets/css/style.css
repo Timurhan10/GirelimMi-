@@ -131,8 +131,8 @@ input::placeholder, textarea::placeholder { color: var(--gri); opacity: .8; }
     position: sticky; top: 0; height: 100vh; overflow-y: auto;
 }
 .sidebar-logo { display: flex; align-items: center; gap: 10px; padding: 4px 6px 18px; }
-.sidebar-logo img { height: 34px; width: auto; }
-.sidebar-logo .brand { font-weight: 700; font-size: 17px; color: #fff; }
+.sidebar-logo img { height: 54px; width: auto; }
+.sidebar-logo .brand { font-weight: 700; font-size: 19px; color: #fff; }
 .sidebar h5 { color: var(--gri); font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
     font-weight: 600; margin: 14px 8px 6px; }
 .nav-item {
@@ -168,7 +168,9 @@ input::placeholder, textarea::placeholder { color: var(--gri); opacity: .8; }
 .user-chip { display: flex; align-items: center; gap: 9px; padding: 6px 8px 6px 6px;
     border-radius: 50px; }
 .avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--turuncu); color: #fff;
-    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex:none;}
+    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex:none;
+    overflow: hidden; }
+.avatar .avatar-img, .avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
 .user-chip .uname { font-size: 14px; font-weight: 600; }
 
 .page { padding: 24px; flex: 1; }
@@ -219,7 +221,9 @@ input::placeholder, textarea::placeholder { color: var(--gri); opacity: .8; }
 .opt-bar { position: absolute; left: 0; top: 0; bottom: 0; background: var(--turuncu-soft); z-index: 0; }
 .opt-name, .opt-pct { position: relative; z-index: 1; }
 .opt-name { font-size: 14px; font-weight: 600; flex: 1; }
-.opt-pct { font-size: 13px; font-weight: 700; color: var(--turuncu-koyu); }
+.opt-pct { font-size: 13px; font-weight: 700; color: var(--turuncu-koyu); white-space: nowrap; }
+.opt-odds { display: inline-block; margin-left: 8px; font-size: 11px; font-weight: 600;
+    color: #16a34a; background: rgba(22,163,74,.10); padding: 1px 7px; border-radius: 20px; }
 
 /* ---------------- LİDERLİK ---------------- */
 .lb-row { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border-bottom: 1px solid var(--acik-gri); }

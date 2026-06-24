@@ -49,7 +49,7 @@ function startAdminListeners() {
             <tr>
                 <td>${escapeHtml(u.nickname || "—")} ${u.isAdmin ? '<span class="badge badge-gri">admin</span>' : ''}</td>
                 <td>${escapeHtml(u.email || "")}</td>
-                <td>${fmtNum(u.balance)}</td>
+                <td>${u.isAdmin ? '∞' : fmtNum(u.balance)}</td>
                 <td style="text-align:right;white-space:nowrap;">
                     <button class="btn btn-soft" style="padding:5px 10px;font-size:12px;" onclick="setTokensManual('${u.id}', ${u.balance || 0})">Bakiye</button>
                     <button class="btn btn-danger" style="padding:5px 9px;font-size:12px;" onclick="deleteUser('${u.id}','${escapeHtml(u.nickname || u.email)}')"><i class="fa-solid fa-trash"></i></button>

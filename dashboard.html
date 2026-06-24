@@ -21,18 +21,18 @@
         <!-- SIDEBAR -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-logo">
-                <img src="assets/img/favicon.png" alt="">
+                <img src="assets/img/logo-mark-orange.png" alt="">
                 <span class="brand">GirelimMi?</span>
             </div>
             <h5>Menü</h5>
-            <button class="nav-item active" data-view="aktif" onclick="switchView('aktif')"><i class="fa-solid fa-fire"></i> Aktif GirelimMi?</button>
+            <button class="nav-item active" data-view="aktif" onclick="switchView('aktif')"><i class="fa-solid fa-fire"></i> GirelimMi?</button>
             <button class="nav-item" data-view="gecmis" onclick="switchView('gecmis')"><i class="fa-solid fa-clock-rotate-left"></i> Geçmiş</button>
             <button class="nav-item" data-view="yarat" onclick="switchView('yarat')"><i class="fa-solid fa-plus"></i> Yarat</button>
             <button class="nav-item" data-view="liderlik" onclick="switchView('liderlik')"><i class="fa-solid fa-trophy"></i> Liderlik</button>
 
             <h5>Hesap</h5>
             <a class="nav-item" href="profil.html"><i class="fa-solid fa-user"></i> Profilim</a>
-            <button class="nav-item" onclick="openTokenModal()"><i class="fa-solid fa-coins"></i> Token Al</button>
+            <button class="nav-item" id="nav-token-btn" onclick="openTokenModal()"><i class="fa-solid fa-coins"></i> Token Al</button>
             <button class="nav-item" id="nav-admin" onclick="openAdminPanel()" style="display:none"><i class="fa-solid fa-user-shield"></i> Yönetici</button>
             <div class="sidebar-foot">
                 <button class="nav-item" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Çıkış Yap</button>
@@ -44,12 +44,12 @@
             <!-- TOPBAR -->
             <div class="topbar">
                 <button class="icon-btn menu-toggle" onclick="toggleSidebar(true)"><i class="fa-solid fa-bars"></i></button>
-                <h2 id="page-title">Aktif GirelimMi?</h2>
+                <h2 id="page-title">GirelimMi?</h2>
                 <div class="spacer"></div>
 
-                <button class="btn btn-soft" onclick="openTokenModal()"><i class="fa-solid fa-coins"></i> Token Al</button>
+                <button class="btn btn-soft" id="topbar-token-btn" onclick="openTokenModal()"><i class="fa-solid fa-coins"></i> Token Al</button>
 
-                <div class="balance-pill" onclick="openTokenModal()">
+                <div class="balance-pill" id="balance-pill" onclick="openTokenModal()">
                     <i class="fa-solid fa-coins"></i> <span id="balance">0</span> Token
                 </div>
 
@@ -109,7 +109,7 @@
             <!-- ===================== YARAT ===================== -->
             <div class="page view" id="view-yarat" style="display:none">
                 <div class="card" style="max-width:720px;">
-                    <h2 style="margin-bottom:4px;">Yeni GirelimMi? Oluştur</h2>
+                    <h2 style="margin-bottom:4px;">GirelimMi? Oluştur</h2>
                     <p class="muted" style="margin-bottom:18px;">Soruyu, seçenekleri ve zamanları belirle; ilk bahsini yatırıp canlıya sür.</p>
 
                     <div class="row">
@@ -162,24 +162,36 @@
             <!-- ===================== LİDERLİK ===================== -->
             <div class="page view" id="view-liderlik" style="display:none">
                 <div class="card" style="max-width:640px;">
-                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
                         <span class="icon-box"><i class="fa-solid fa-trophy"></i></span>
-                        <h2>En Büyük Balinalar</h2>
+                        <h2>Liderlik</h2>
                     </div>
-                    <p class="muted" style="margin-bottom:12px;">En yüksek bakiyeli oyuncular.</p>
-                    <div id="leaderboard"><div class="empty-state">Yükleniyor...</div></div>
+                    <div class="chips" id="lb-tabs">
+                        <button class="chip active" data-lb="token" onclick="switchLeaderboard('token')"><i class="fa-solid fa-coins"></i> Token</button>
+                        <button class="chip" data-lb="acan" onclick="switchLeaderboard('acan')"><i class="fa-solid fa-fire"></i> En Çok Açan</button>
+                    </div>
+
+                    <div id="lb-pane-token">
+                        <p class="muted" style="margin:12px 0;">En yüksek bakiyeli oyuncular.</p>
+                        <div id="leaderboard"><div class="empty-state">Yükleniyor...</div></div>
+                    </div>
+
+                    <div id="lb-pane-acan" style="display:none">
+                        <p class="muted" style="margin:12px 0;">En çok GirelimMi? açan oyuncular.</p>
+                        <div id="leaderboard-acan"><div class="empty-state">Yükleniyor...</div></div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- CHAT -->
-    <div class="chat-panel" id="chat-panel">
+    <!-- CHAT (başlangıçta kapalı; başlığa tıklayınca açılır) -->
+    <div class="chat-panel min" id="chat-panel">
         <div class="chat-head" onclick="toggleChatMin()">
             <span><i class="fa-solid fa-comments"></i> Sohbet</span>
             <div class="ch-actions">
                 <button id="chat-clear" onclick="event.stopPropagation(); clearChat()" style="display:none" title="Temizle"><i class="fa-solid fa-trash"></i></button>
-                <button onclick="event.stopPropagation(); toggleChatMin()" title="Küçült"><i class="fa-solid fa-minus" id="chat-min-icon"></i></button>
+                <button onclick="event.stopPropagation(); toggleChatMin()" title="Aç/Kapat"><i class="fa-solid fa-plus" id="chat-min-icon"></i></button>
             </div>
         </div>
         <div class="chat-tabs">

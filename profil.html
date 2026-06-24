@@ -30,7 +30,11 @@
                 <!-- Profil kartı -->
                 <div class="card" style="flex:1;min-width:260px;">
                     <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
-                        <div class="avatar" style="width:56px;height:56px;font-size:22px;" id="p-avatar">?</div>
+                        <label for="p-photo-input" title="Profil fotoğrafı yükle" style="cursor:pointer;position:relative;display:inline-block;">
+                            <div class="avatar" style="width:56px;height:56px;font-size:22px;" id="p-avatar">?</div>
+                            <span style="position:absolute;right:-2px;bottom:-2px;background:var(--turuncu);color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;border:2px solid #fff;"><i class="fa-solid fa-camera"></i></span>
+                        </label>
+                        <input type="file" id="p-photo-input" accept="image/*" style="display:none" onchange="uploadProfilePhoto(this.files[0])">
                         <div>
                             <h2 id="p-name">...</h2>
                             <div class="muted" id="p-email"></div>

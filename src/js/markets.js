@@ -10,15 +10,28 @@ function generateMarketCardHTML(m, now = Date.now()) {
     const options = m.options || [];
     const canBet = status === "aktif";
 
+    // Parimutuel: bir seçeneğe yatırılan 1 token'ın tahmini net kazancı (%)
+    // = dağıtılacak havuz / o seçeneğin havuzu - 1. (Komisyon düşülmüş)
+    const commission = (m.commissionRate != null) ? m.commissionRate : APP_CONFIG.COMMISSION_RATE;
+    const distributed = total * (1 - commission);
+
     const optRows = options.map(o => {
         const pool = pools[o.key] || 0;
         const pct = total > 0 ? Math.round(pool / total * 100) : 0;
         const isWin = m.resolved && m.winningOption === o.key;
         const clickable = canBet ? `onclick="openBetModal('${m.id}','${o.key}', this.dataset.name)"` : "";
+        // Tahmini kazanç notu yalnızca bahis açıkken ve havuz oluşmuşken gösterilir.
+        let oddsNote = "";
+        if (canBet && total > 0 && pool > 0) {
+            const profitPct = Math.round((distributed / pool - 1) * 100);
+            oddsNote = `<span class="opt-odds" title="Bu seçeneğe yatırılan token başına tahmini kazanç">≈ %${profitPct} kazanç</span>`;
+        } else if (canBet && total > 0 && pool === 0) {
+            oddsNote = `<span class="opt-odds" title="Bu seçeneğe ilk bahsi sen yaparsın">ilk bahis</span>`;
+        }
         return `<div class="opt-row ${canBet ? '' : 'disabled'} ${isWin ? 'win' : ''}" data-name="${escapeHtml(o.name)}" ${clickable}>
                     <span class="opt-bar" style="width:${pct}%"></span>
                     <span class="opt-name">${isWin ? '🏆 ' : ''}${escapeHtml(o.name)}</span>
-                    <span class="opt-pct">${pct}% · ${fmtNum(pool)}</span>
+                    <span class="opt-pct">${pct}% · ${fmtNum(pool)}${oddsNote}</span>
                 </div>`;
     }).join("");
 
@@ -32,7 +45,7 @@ function generateMarketCardHTML(m, now = Date.now()) {
         : `<i class="fa-solid fa-check"></i> Sonuçlandı: ${fmtDateTime(m.resolvesAt)}`;
 
     const isOwnerOrAdmin = STATE.isAdmin || m.createdBy === STATE.user.uid;
-    let actions = `<button class="btn btn-ghost" style="padding:8px 14px;font-size:13px;" onclick="openMarketChat('${m.id}','${escapeHtml(m.title).replace(/'/g, "")}')"><i class="fa-solid fa-comments"></i> Sohbet</button>`;
+    let actions = `<button class="btn btn-ghost" style="padding:8px 14px;font-size:13px;" onclick="openMarketChat('${m.id}','${escapeHtml(m.title).replace(/'/g, "")}')"><i class="fa-solid fa-comments"></i> Yorumlar</button>`;
     if (status === "kilitli" && STATE.isAdmin) {
         actions += `<button class="btn btn-primary" style="padding:8px 14px;font-size:13px;" onclick="openResolveModal('${m.id}')"><i class="fa-solid fa-gavel"></i> Sonuçlandır</button>`;
     }
@@ -133,7 +146,7 @@ async function createMarket() {
         return toast("Zamanlar sırayla olmalı: Başlangıç < Kapanış < Bitiş.", "err");
     if (bettingClosesAt <= new Date()) return toast("Kapanış zamanı gelecekte olmalı.", "err");
     if (isNaN(amount) || amount <= 0) return toast("Geçerli bir token miktarı gir.", "err");
-    if (amount > (STATE.profile.balance || 0)) return toast("Yetersiz bakiye.", "err");
+    if (!STATE.isAdmin && amount > (STATE.profile.balance || 0)) return toast("Yetersiz bakiye.", "err");
 
     const options = names.map((n, i) => ({ key: "o" + i, name: n }));
     const choiceKey = "o" + choiceIdx;
@@ -145,10 +158,13 @@ async function createMarket() {
         const userRef = db.collection("users").doc(STATE.user.uid);
         const marketRef = db.collection("markets").doc();
         await db.runTransaction(async (tx) => {
-            const uSnap = await tx.get(userRef);
-            const bal = uSnap.data().balance || 0;
-            if (amount > bal) throw new Error("Yetersiz bakiye.");
-            tx.update(userRef, { balance: bal - amount });
+            // Admin sınırsız: bakiye düşülmez. Diğer kullanıcılarda ilk havuz bakiyeden iner.
+            if (!STATE.isAdmin) {
+                const uSnap = await tx.get(userRef);
+                const bal = uSnap.data().balance || 0;
+                if (amount > bal) throw new Error("Yetersiz bakiye.");
+                tx.update(userRef, { balance: bal - amount });
+            }
             tx.set(marketRef, {
                 title, category, options, pools, totalPool: amount,
                 seed: { uid: STATE.user.uid, nickname: STATE.profile.nickname || STATE.profile.email, optionKey: choiceKey, amount },

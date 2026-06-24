@@ -27,16 +27,26 @@ function validateNickname(n) {
     return /^[a-zA-Z0-9ğüşıöçĞÜŞİÖÇ]+$/.test(n);
 }
 
-// ---------------- GİRİŞ ----------------
+// ---------------- GİRİŞ (e-posta VEYA kullanıcı adı) ----------------
 async function handleLogin() {
     if (!fbReadyGuard()) return;
-    const email = document.getElementById("email").value.trim();
+    const identifier = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value;
-    if (!email || !password) { setMsg("Lütfen tüm alanları doldur."); return; }
+    if (!identifier || !password) { setMsg("Lütfen tüm alanları doldur."); return; }
 
     const btn = document.getElementById("login-btn");
     btn.disabled = true; setMsg("Giriş yapılıyor...", "");
     try {
+        let email = identifier;
+        // "@" yoksa kullanıcı adı kabul et: nickname -> email çevir (public okunur)
+        if (!identifier.includes("@")) {
+            const nickSnap = await db.collection("nicknames").doc(identifier.toLowerCase()).get();
+            if (!nickSnap.exists || !nickSnap.data().email) {
+                setMsg("Bu kullanıcı adı bulunamadı. E-posta ile dene veya kullanıcı adını kontrol et.");
+                btn.disabled = false; return;
+            }
+            email = nickSnap.data().email;
+        }
         await auth.signInWithEmailAndPassword(email, password);
         location.replace("dashboard.html");
     } catch (e) {
@@ -79,12 +89,15 @@ async function handleRegister() {
     const nickKey = nickname.toLowerCase();
 
     try {
-        // 1) Davet kodu kontrolü (tek doküman get; public okunabilir)
-        if (APP_CONFIG.INVITE_REQUIRED) {
+        // 1) Davet kodu opsiyonel: girildiyse geçerli/kullanılmamış olmalı.
+        let useInvite = false;
+        if (invite) {
             const inviteSnap = await db.collection("inviteCodes").doc(invite).get();
             if (!inviteSnap.exists || inviteSnap.data().used) {
-                setMsg("Geçersiz veya kullanılmış davet kodu."); btn.disabled = false; return;
+                setMsg("Geçersiz veya kullanılmış davet kodu. Boş bırakıp kodsuz da kayıt olabilirsin.");
+                btn.disabled = false; return;
             }
+            useInvite = true;
         }
         // 2) Nickname benzersizliği (tek doküman get)
         const nickSnap = await db.collection("nicknames").doc(nickKey).get();
@@ -96,22 +109,26 @@ async function handleRegister() {
         try { await u.updateProfile({ displayName: nickname }); } catch (_) {}
 
         // 4) Profil + davet kodu tüketimi + nickname rezervasyonu (atomik batch)
-        const batch = db.batch();
-        batch.set(db.collection("users").doc(u.uid), {
+        const startBalance = useInvite ? APP_CONFIG.INVITE_BONUS : APP_CONFIG.WELCOME_BONUS;
+        const userData = {
             email, nickname,
-            balance: APP_CONFIG.WELCOME_BONUS,   // güvenlik kuralları bu değeri üst sınırla doğrular
+            balance: startBalance,   // güvenlik kuralları bu değeri davet koduna göre doğrular
             isAdmin: false,
             createdAt: FieldValue.serverTimestamp(),
-        });
-        batch.set(db.collection("nicknames").doc(nickKey), { uid: u.uid });
-        if (APP_CONFIG.INVITE_REQUIRED) {
+        };
+        if (useInvite) userData.invitedWith = invite;   // kural getAfter ile kodu doğrular
+
+        const batch = db.batch();
+        batch.set(db.collection("users").doc(u.uid), userData);
+        batch.set(db.collection("nicknames").doc(nickKey), { uid: u.uid, email });   // email: kullanıcı adıyla giriş için
+        if (useInvite) {
             batch.update(db.collection("inviteCodes").doc(invite), {
                 used: true, usedBy: u.uid, usedAt: FieldValue.serverTimestamp(),
             });
         }
         await batch.commit();
 
-        toast(`Hoş geldin, ${nickname}! ${fmtNum(APP_CONFIG.WELCOME_BONUS)} hediye token hesabında.`, "ok");
+        toast(`Hoş geldin, ${nickname}! ${fmtNum(startBalance)} token hesabında.`, "ok");
         location.replace("dashboard.html");
     } catch (e) {
         console.error("Kayıt hatası:", e);

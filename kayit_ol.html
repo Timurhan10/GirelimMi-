@@ -21,12 +21,12 @@
             <img src="assets/img/logo.png" alt="GirelimMi?" class="auth-logo">
 
             <h1 class="auth-title">Kayıt Ol</h1>
-            <p class="auth-sub">Davet kodunla hesabını oluştur, hediye token'ınla başla.</p>
+            <p class="auth-sub">Hesabını oluştur. Davet kodu girersen 2.000 token, kodsuz kayıtta 100 hediye token ile başlarsın.</p>
 
             <form id="register-form" onsubmit="event.preventDefault(); handleRegister();">
                 <div class="field">
-                    <label>Davet Kodu</label>
-                    <input type="text" id="reg-invite" placeholder="Örn: GIRELIM2026" autocomplete="off">
+                    <label>Davet Kodu <span class="muted" style="font-weight:400;">(opsiyonel — girersen 2.000 token)</span></label>
+                    <input type="text" id="reg-invite" placeholder="Kodun varsa yaz, yoksa boş bırak" autocomplete="off">
                 </div>
                 <div class="field">
                     <label>Kullanıcı Adı (nickname)</label>

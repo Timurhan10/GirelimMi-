@@ -12,8 +12,9 @@ const APP_CONFIG = {
     MAX_BET: 0,                // üst limit yok (0 = limitsiz)
 
     // Kayıt
-    INVITE_REQUIRED: true,     // davet kodu zorunlu
-    WELCOME_BONUS: 100,        // her yeni kullanıcıya hediye başlangıç bakiyesi (token)
+    INVITE_REQUIRED: false,    // davet kodu opsiyonel (zorunlu değil)
+    WELCOME_BONUS: 100,        // kodsuz kayıtta hediye başlangıç bakiyesi (token)
+    INVITE_BONUS: 2000,        // geçerli davet kodu ile kayıtta başlangıç bakiyesi (token)
 
     // Kategoriler & bahis seçenekleri
     CATEGORIES: ["Spor", "Ekonomi", "Siyaset", "Eğlence", "Diğer"],
