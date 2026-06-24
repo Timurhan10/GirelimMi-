@@ -14,9 +14,10 @@ function listenChannel(channelKey) {
     body.innerHTML = `<div class="empty-state"><i class="fa-solid fa-spinner spin"></i></div>`;
     chatUnsub = db.collection("chat")
         .where("channel", "==", channelKey)
-        .orderBy("createdAt", "asc").limit(100)
         .onSnapshot((snap) => {
-            const msgs = []; snap.forEach(d => msgs.push(d.data()));
+            let msgs = []; snap.forEach(d => msgs.push(d.data()));
+            msgs.sort((a, b) => (toDate(a.createdAt)?.getTime() || 0) - (toDate(b.createdAt)?.getTime() || 0));
+            msgs = msgs.slice(-100);
             body.innerHTML = msgs.length ? msgs.map(mm => `
                 <div class="chat-msg"><span class="cm-name">${escapeHtml(mm.nickname || "?")}:</span>${escapeHtml(mm.text)}</div>`).join("")
                 : `<div class="empty-state">İlk mesajı sen yaz!</div>`;

@@ -6,9 +6,10 @@ let NOTIS = [];
 function startNotifications() {
     db.collection("notifications")
         .where("to", "==", STATE.user.uid)
-        .orderBy("createdAt", "desc").limit(30)
         .onSnapshot((snap) => {
             NOTIS = []; snap.forEach(d => NOTIS.push({ id: d.id, ...d.data() }));
+            NOTIS.sort((a, b) => (toDate(b.createdAt)?.getTime() || 0) - (toDate(a.createdAt)?.getTime() || 0));
+            NOTIS = NOTIS.slice(0, 30);
             renderNotifications();
         }, (e) => console.error("Bildirim hatası:", e));
 }
