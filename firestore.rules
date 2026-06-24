@@ -1,0 +1,170 @@
+rules_version = '2';
+// ======================================================
+// GirelimMi? — FIRESTORE GÜVENLİK KURALLARI
+// Sunucu (Cloud Functions) YOK. Tüm bütünlük burada zorlanır.
+// Ana ilke: Kullanıcı KENDİ bakiyesini ARTIRAMAZ; sadece bahisle düşürür.
+//            Bakiyeyi yalnızca admin artırabilir (kazanç/token yükleme).
+// ======================================================
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---- HEDİYE BAKİYE ÜST SINIRI (config.js WELCOME_BONUS ile aynı tut!) ----
+    function WELCOME_BONUS() { return 100; }
+
+    function signedIn() { return request.auth != null; }
+    function me() { return request.auth.uid; }
+    function userData(uid) { return get(/databases/$(database)/documents/users/$(uid)).data; }
+    function isAdmin() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(me()))
+        && userData(me()).isAdmin == true;
+    }
+    function balNow(uid) { return userData(uid).balance; }
+    function balAfter(uid) { return getAfter(/databases/$(database)/documents/users/$(uid)).data.balance; }
+    function marketData(id) { return get(/databases/$(database)/documents/markets/$(id)).data; }
+
+    // ----------------- USERS -----------------
+    match /users/{uid} {
+      allow read: if signedIn();
+
+      // Kayıt: kendi dokümanını oluşturur, admin olamaz, bakiye hediye sınırını aşamaz.
+      allow create: if me() == uid
+        && request.resource.data.isAdmin == false
+        && request.resource.data.balance is number
+        && request.resource.data.balance >= 0
+        && request.resource.data.balance <= WELCOME_BONUS();
+
+      // Güncelleme: admin her şeyi yapar; kullanıcı kendi bakiyesini ARTIRAMAZ.
+      allow update: if isAdmin()
+        || ( me() == uid
+             && request.resource.data.isAdmin == resource.data.isAdmin
+             && request.resource.data.email == resource.data.email
+             && request.resource.data.balance is number
+             && request.resource.data.balance >= 0
+             && request.resource.data.balance <= resource.data.balance );
+
+      allow delete: if isAdmin();
+    }
+
+    // ----------------- NICKNAMES (benzersizlik kilidi) -----------------
+    match /nicknames/{nick} {
+      allow get: if true;              // kayıt öncesi benzersizlik kontrolü
+      allow list: if isAdmin();
+      // create yalnızca yoksa çalışır; varsa update sayılır ve reddedilir => benzersizlik garantisi
+      allow create: if signedIn() && request.resource.data.uid == me();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ----------------- INVITE CODES -----------------
+    match /inviteCodes/{code} {
+      allow get: if true;              // kayıt öncesi tekil kod doğrulama
+      allow list: if isAdmin();
+      allow create: if isAdmin();
+      // Tüketim: kayıt sırasında kullanan kişi used=true yapar (sadece bir kez).
+      allow update: if isAdmin()
+        || ( signedIn()
+             && resource.data.used == false
+             && request.resource.data.used == true
+             && request.resource.data.usedBy == me() );
+      allow delete: if isAdmin();
+    }
+
+    // ----------------- MARKETS (GirelimMi?) -----------------
+    match /markets/{id} {
+      allow read: if true;
+
+      // Oluşturma: zamanlar tutarlı; ilk havuz bakiyeden düşülmüş olmalı.
+      allow create: if signedIn()
+        && request.resource.data.createdBy == me()
+        && request.resource.data.resolved == false
+        && request.resource.data.startsAt is timestamp
+        && request.resource.data.bettingClosesAt is timestamp
+        && request.resource.data.resolvesAt is timestamp
+        && request.resource.data.startsAt < request.resource.data.bettingClosesAt
+        && request.resource.data.bettingClosesAt < request.resource.data.resolvesAt
+        && request.resource.data.totalPool is number
+        && request.resource.data.totalPool > 0
+        && balAfter(me()) == balNow(me()) - request.resource.data.totalPool
+        && balAfter(me()) >= 0;
+
+      // Güncelleme: admin sonuçlandırır; kullanıcı SADECE bahis penceresinde havuzu artırır
+      // ve artış kendi bakiyesinden düşülür. Sabit alanlar değiştirilemez.
+      allow update: if isAdmin()
+        || ( signedIn()
+             && resource.data.resolved == false
+             && request.resource.data.resolved == false
+             && request.time >= resource.data.startsAt
+             && request.time < resource.data.bettingClosesAt
+             && request.resource.data.title == resource.data.title
+             && request.resource.data.category == resource.data.category
+             && request.resource.data.createdBy == resource.data.createdBy
+             && request.resource.data.startsAt == resource.data.startsAt
+             && request.resource.data.bettingClosesAt == resource.data.bettingClosesAt
+             && request.resource.data.resolvesAt == resource.data.resolvesAt
+             && request.resource.data.options == resource.data.options
+             && request.resource.data.totalPool > resource.data.totalPool
+             && balAfter(me()) == balNow(me()) - (request.resource.data.totalPool - resource.data.totalPool)
+             && balAfter(me()) >= 0 );
+
+      allow delete: if isAdmin();
+    }
+
+    // ----------------- BETS (değiştirilemez kayıt) -----------------
+    match /bets/{id} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.uid == me()
+        && request.resource.data.amount is number
+        && request.resource.data.amount > 0
+        && request.time >= marketData(request.resource.data.marketId).startsAt
+        && request.time < marketData(request.resource.data.marketId).bettingClosesAt
+        && marketData(request.resource.data.marketId).resolved == false;
+      allow update, delete: if isAdmin();
+    }
+
+    // ----------------- CHAT -----------------
+    match /chat/{id} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.uid == me()
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 200;
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
+    // ----------------- NOTIFICATIONS -----------------
+    match /notifications/{id} {
+      allow read: if signedIn() && (resource.data.to == me() || isAdmin());
+      allow create: if signedIn();   // başka kullanıcıya bildirim bırakılabilir
+      // Sahibi sadece okundu işaretler (to değişmez).
+      allow update: if signedIn() && resource.data.to == me()
+        && request.resource.data.to == resource.data.to;
+      allow delete: if isAdmin() || (signedIn() && resource.data.to == me());
+    }
+
+    // ----------------- TOKEN REQUESTS (para gönderdim, yükle) -----------------
+    match /tokenRequests/{id} {
+      allow read: if isAdmin() || (signedIn() && resource.data.uid == me());
+      allow create: if signedIn() && request.resource.data.uid == me();
+      allow update, delete: if isAdmin();
+    }
+
+    // ----------------- LIVE FEED -----------------
+    match /liveFeed/{id} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.uid == me();
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
+    // ----------------- AUDIT LOG -----------------
+    match /auditLog/{id} {
+      allow read: if isAdmin();
+      allow create: if isAdmin();
+      allow update, delete: if false;
+    }
+  }
+}

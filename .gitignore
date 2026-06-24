@@ -1,0 +1,20 @@
+# Bağımlılıklar
+node_modules/
+
+# Firebase
+.firebase/
+firebase-debug.log
+*-debug.log
+.runtimeconfig.json
+
+# Ortam / gizli
+.env
+.env.local
+
+# Editör / araç
+.claude/
+
+# OS / editör
+.DS_Store
+Thumbs.db
+*.log

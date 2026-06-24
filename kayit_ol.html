@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kayıt Ol — GirelimMi?</title>
+    <link rel="icon" href="assets/img/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+    <script src="src/js/config.js"></script>
+    <script src="src/js/util.js"></script>
+    <script src="src/js/firebase-init.js"></script>
+</head>
+<body>
+    <div class="auth-wrap">
+        <div class="auth-card">
+            <img src="assets/img/logo.png" alt="GirelimMi?" class="auth-logo">
+
+            <h1 class="auth-title">Kayıt Ol</h1>
+            <p class="auth-sub">Davet kodunla hesabını oluştur, hediye token'ınla başla.</p>
+
+            <form id="register-form" onsubmit="event.preventDefault(); handleRegister();">
+                <div class="field">
+                    <label>Davet Kodu</label>
+                    <input type="text" id="reg-invite" placeholder="Örn: GIRELIM2026" autocomplete="off">
+                </div>
+                <div class="field">
+                    <label>Kullanıcı Adı (nickname)</label>
+                    <input type="text" id="reg-nickname" placeholder="3-20 karakter, harf/rakam" autocomplete="username">
+                </div>
+                <div class="field">
+                    <label>E-posta</label>
+                    <input type="email" id="reg-email" placeholder="ornek@domain.com" autocomplete="email">
+                </div>
+                <div class="row">
+                    <div class="field">
+                        <label>Şifre</label>
+                        <input type="password" id="reg-password" placeholder="En az 6 karakter" autocomplete="new-password">
+                    </div>
+                    <div class="field">
+                        <label>Şifre (tekrar)</label>
+                        <input type="password" id="reg-password2" placeholder="••••••••" autocomplete="new-password">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block" id="register-btn">Hesabı Oluştur <i class="fa-solid fa-bolt"></i></button>
+                <div class="form-msg" id="msg"></div>
+            </form>
+
+            <div class="auth-foot">
+                Zaten hesabın var mı? <a href="login.html">Giriş yap</a>
+            </div>
+            <div class="auth-foot" style="font-size:12px;">
+                Davet kodun yok mu? Bir yöneticiden iste.
+            </div>
+        </div>
+    </div>
+    <script src="src/js/auth.js"></script>
+</body>
+</html>

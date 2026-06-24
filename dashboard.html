@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GirelimMi? — Panel</title>
+    <link rel="icon" href="assets/img/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+    <script src="src/js/config.js"></script>
+    <script src="src/js/util.js"></script>
+    <script src="src/js/firebase-init.js"></script>
+</head>
+<body>
+    <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="toggleSidebar(false)"></div>
+    <div class="app">
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <img src="assets/img/favicon.png" alt="">
+                <span class="brand">GirelimMi?</span>
+            </div>
+            <h5>Menü</h5>
+            <button class="nav-item active" data-view="aktif" onclick="switchView('aktif')"><i class="fa-solid fa-fire"></i> Aktif GirelimMi?</button>
+            <button class="nav-item" data-view="gecmis" onclick="switchView('gecmis')"><i class="fa-solid fa-clock-rotate-left"></i> Geçmiş</button>
+            <button class="nav-item" data-view="yarat" onclick="switchView('yarat')"><i class="fa-solid fa-plus"></i> Yarat</button>
+            <button class="nav-item" data-view="liderlik" onclick="switchView('liderlik')"><i class="fa-solid fa-trophy"></i> Liderlik</button>
+
+            <h5>Hesap</h5>
+            <a class="nav-item" href="profil.html"><i class="fa-solid fa-user"></i> Profilim</a>
+            <button class="nav-item" onclick="openTokenModal()"><i class="fa-solid fa-coins"></i> Token Al</button>
+            <button class="nav-item" id="nav-admin" onclick="openAdminPanel()" style="display:none"><i class="fa-solid fa-user-shield"></i> Yönetici</button>
+            <div class="sidebar-foot">
+                <button class="nav-item" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Çıkış Yap</button>
+            </div>
+        </aside>
+
+        <!-- CONTENT -->
+        <div class="content">
+            <!-- TOPBAR -->
+            <div class="topbar">
+                <button class="icon-btn menu-toggle" onclick="toggleSidebar(true)"><i class="fa-solid fa-bars"></i></button>
+                <h2 id="page-title">Aktif GirelimMi?</h2>
+                <div class="spacer"></div>
+
+                <button class="btn btn-soft" onclick="openTokenModal()"><i class="fa-solid fa-coins"></i> Token Al</button>
+
+                <div class="balance-pill" onclick="openTokenModal()">
+                    <i class="fa-solid fa-coins"></i> <span id="balance">0</span> Token
+                </div>
+
+                <div class="dropdown">
+                    <button class="icon-btn" onclick="toggleNotifications()" title="Bildirimler">
+                        <i class="fa-solid fa-bell"></i>
+                        <span class="dot-badge" id="noti-badge">0</span>
+                    </button>
+                    <div class="dd-menu" id="noti-menu">
+                        <div class="dd-head">
+                            <strong>Bildirimler</strong>
+                            <button class="link-btn" onclick="markAllNotificationsRead()">Tümünü okundu yap</button>
+                        </div>
+                        <div class="dd-list" id="noti-list">
+                            <div class="empty-state">Bildirim yok.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="user-chip">
+                    <div class="avatar" id="user-avatar">?</div>
+                    <span class="uname" id="user-name">...</span>
+                </div>
+            </div>
+
+            <!-- ===================== AKTİF ===================== -->
+            <div class="page view" id="view-aktif">
+                <div class="chips" id="chips-aktif"></div>
+                <div class="row" style="align-items:flex-start; gap:18px;">
+                    <div style="flex:3; min-width:280px;">
+                        <div class="market-grid" id="grid-aktif">
+                            <div class="empty-state"><i class="fa-solid fa-spinner spin"></i> Yükleniyor...</div>
+                        </div>
+                    </div>
+                    <div style="flex:1; min-width:220px;">
+                        <div class="card">
+                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+                                <span class="icon-box" style="width:32px;height:32px;font-size:14px;"><i class="fa-solid fa-bolt"></i></span>
+                                <strong>Canlı Akış</strong>
+                            </div>
+                            <div class="stack" id="live-feed" style="gap:8px;max-height:420px;overflow-y:auto;">
+                                <div class="empty-state">Henüz hareket yok.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===================== GEÇMİŞ ===================== -->
+            <div class="page view" id="view-gecmis" style="display:none">
+                <div class="chips" id="chips-gecmis"></div>
+                <div class="market-grid" id="grid-gecmis">
+                    <div class="empty-state">Yükleniyor...</div>
+                </div>
+            </div>
+
+            <!-- ===================== YARAT ===================== -->
+            <div class="page view" id="view-yarat" style="display:none">
+                <div class="card" style="max-width:720px;">
+                    <h2 style="margin-bottom:4px;">Yeni GirelimMi? Oluştur</h2>
+                    <p class="muted" style="margin-bottom:18px;">Soruyu, seçenekleri ve zamanları belirle; ilk bahsini yatırıp canlıya sür.</p>
+
+                    <div class="row">
+                        <div class="field" style="flex:1;">
+                            <label>Kategori</label>
+                            <select id="m-category"></select>
+                        </div>
+                        <div class="field" style="flex:2;">
+                            <label>Soru / Başlık</label>
+                            <input type="text" id="m-title" placeholder="Örn: Bu akşamki maçı kim kazanır?">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Seçenekler (2–5). Her seçeneğin adını sen yaz.</label>
+                        <div class="stack" id="m-options" style="gap:8px;"></div>
+                        <button type="button" class="link-btn mt-8" id="add-option-btn" onclick="addOptionInput()"><i class="fa-solid fa-plus"></i> Seçenek ekle</button>
+                    </div>
+
+                    <div class="row">
+                        <div class="field">
+                            <label>Başlangıç (bahis açılır)</label>
+                            <input type="datetime-local" id="m-start">
+                        </div>
+                        <div class="field">
+                            <label>Kapanış (bahis kilitlenir)</label>
+                            <input type="datetime-local" id="m-close">
+                        </div>
+                        <div class="field">
+                            <label>Bitiş (sonuç girilir)</label>
+                            <input type="datetime-local" id="m-end">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="field">
+                            <label>Senin tercihin</label>
+                            <select id="m-choice"></select>
+                        </div>
+                        <div class="field">
+                            <label>Yatıracağın token</label>
+                            <input type="number" id="m-bet" min="1" placeholder="Örn: 500">
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary btn-block mt-8" id="create-btn" onclick="createMarket()">GirelimMi? Yarat <i class="fa-solid fa-bolt"></i></button>
+                </div>
+            </div>
+
+            <!-- ===================== LİDERLİK ===================== -->
+            <div class="page view" id="view-liderlik" style="display:none">
+                <div class="card" style="max-width:640px;">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+                        <span class="icon-box"><i class="fa-solid fa-trophy"></i></span>
+                        <h2>En Büyük Balinalar</h2>
+                    </div>
+                    <p class="muted" style="margin-bottom:12px;">En yüksek bakiyeli oyuncular.</p>
+                    <div id="leaderboard"><div class="empty-state">Yükleniyor...</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHAT -->
+    <div class="chat-panel" id="chat-panel">
+        <div class="chat-head" onclick="toggleChatMin()">
+            <span><i class="fa-solid fa-comments"></i> Sohbet</span>
+            <div class="ch-actions">
+                <button id="chat-clear" onclick="event.stopPropagation(); clearChat()" style="display:none" title="Temizle"><i class="fa-solid fa-trash"></i></button>
+                <button onclick="event.stopPropagation(); toggleChatMin()" title="Küçült"><i class="fa-solid fa-minus" id="chat-min-icon"></i></button>
+            </div>
+        </div>
+        <div class="chat-tabs">
+            <button class="chat-tab active" data-ch="global" onclick="switchChat('global')">🌍 Genel</button>
+            <button class="chat-tab" data-ch="market" id="chat-tab-market" onclick="switchChat('market')" style="display:none">📊 Lades</button>
+        </div>
+        <div class="chat-body" id="chat-body"><div class="empty-state">Yükleniyor...</div></div>
+        <div class="chat-input-row">
+            <input type="text" id="chat-input" placeholder="Mesaj yaz..." maxlength="200" onkeydown="if(event.key==='Enter')sendChat()">
+            <button class="btn btn-primary" onclick="sendChat()"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <!-- BET MODAL -->
+    <div class="modal-overlay" id="bet-modal">
+        <div class="modal">
+            <div class="modal-head">
+                <h3 id="bet-title">Bahis</h3>
+                <button class="modal-close" onclick="closeBetModal()">&times;</button>
+            </div>
+            <p class="muted">Seçimin: <strong id="bet-choice" style="color:var(--turuncu-koyu)"></strong></p>
+            <div class="field mt-16">
+                <label>Token miktarı (bakiyenle sınırlı)</label>
+                <input type="number" id="bet-amount" min="1" placeholder="Örn: 250">
+            </div>
+            <button class="btn btn-primary btn-block" id="bet-confirm" onclick="confirmBet()">Yatır ve Kilitle <i class="fa-solid fa-lock"></i></button>
+        </div>
+    </div>
+
+    <!-- TOKEN MODAL -->
+    <div class="modal-overlay" id="token-modal">
+        <div class="modal">
+            <div class="modal-head">
+                <h3>Token Al</h3>
+                <button class="modal-close" onclick="closeTokenModal()">&times;</button>
+            </div>
+            <p class="muted" style="margin-bottom:12px;">Aşağıdaki IBAN'a ödeme yap, <strong>açıklamaya kullanıcı adını yaz</strong>. Yönetici token'larını yükleyecek.</p>
+            <div id="token-tiers"></div>
+            <div class="iban-box">
+                <div>IBAN: <code id="iban-no"></code></div>
+                <div class="mt-8">Ad: <strong id="iban-name"></strong></div>
+                <div class="mt-8 muted" style="font-size:12px;">Açıklama: <strong id="iban-desc"></strong></div>
+            </div>
+            <button class="btn btn-soft btn-block mt-16" onclick="createTokenRequest()"><i class="fa-solid fa-paper-plane"></i> Ödeme yaptım, bildir</button>
+        </div>
+    </div>
+
+    <!-- RESOLVE MODAL -->
+    <div class="modal-overlay" id="resolve-modal">
+        <div class="modal">
+            <div class="modal-head">
+                <h3>Sonuçlandır</h3>
+                <button class="modal-close" onclick="closeResolveModal()">&times;</button>
+            </div>
+            <p class="muted" id="resolve-title"></p>
+            <div class="field mt-16">
+                <label>Kazanan seçenek</label>
+                <select id="resolve-choice"></select>
+            </div>
+            <div class="card" style="background:var(--turuncu-soft);border:none;font-size:13px;" id="resolve-preview"></div>
+            <button class="btn btn-primary btn-block mt-16" id="resolve-confirm" onclick="confirmResolve()">Kazananı İlan Et ve Dağıt</button>
+        </div>
+    </div>
+
+    <!-- ADMIN MODAL -->
+    <div class="modal-overlay" id="admin-modal">
+        <div class="modal modal-lg">
+            <div class="modal-head">
+                <h3><i class="fa-solid fa-user-shield"></i> Yönetici Paneli</h3>
+                <button class="modal-close" onclick="closeAdminPanel()">&times;</button>
+            </div>
+            <div class="stack">
+                <div>
+                    <h4 style="margin-bottom:8px;">Bekleyen İstekler</h4>
+                    <div id="admin-requests"><div class="empty-state">—</div></div>
+                </div>
+                <div>
+                    <h4 style="margin-bottom:8px;">Davet Kodları</h4>
+                    <button class="btn btn-soft mt-8" onclick="generateInviteCode()"><i class="fa-solid fa-plus"></i> Yeni kod üret</button>
+                    <div id="admin-codes" class="row" style="margin-top:10px;"></div>
+                </div>
+                <div>
+                    <h4 style="margin-bottom:8px;">Kullanıcılar</h4>
+                    <div style="overflow-x:auto;">
+                        <table class="table">
+                            <thead><tr><th>Kullanıcı</th><th>E-posta</th><th>Bakiye</th><th style="text-align:right;">İşlem</th></tr></thead>
+                            <tbody id="admin-users"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="src/js/notifications.js"></script>
+    <script src="src/js/chat.js"></script>
+    <script src="src/js/markets.js"></script>
+    <script src="src/js/bets.js"></script>
+    <script src="src/js/admin.js"></script>
+    <script src="src/js/auth.js"></script>
+    <script src="src/js/app.js"></script>
+</body>
+</html>

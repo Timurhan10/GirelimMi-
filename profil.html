@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profilim — GirelimMi?</title>
+    <link rel="icon" href="assets/img/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+    <script src="src/js/config.js"></script>
+    <script src="src/js/util.js"></script>
+    <script src="src/js/firebase-init.js"></script>
+</head>
+<body>
+    <div class="content">
+        <div class="topbar">
+            <a class="icon-btn" href="dashboard.html" title="Geri"><i class="fa-solid fa-arrow-left"></i></a>
+            <h2>Profilim</h2>
+            <div class="spacer"></div>
+            <div class="balance-pill"><i class="fa-solid fa-coins"></i> <span id="balance">0</span> Token</div>
+            <button class="icon-btn" onclick="logout()" title="Çıkış"><i class="fa-solid fa-right-from-bracket"></i></button>
+        </div>
+
+        <div class="page">
+            <div class="row" style="align-items:flex-start;">
+                <!-- Profil kartı -->
+                <div class="card" style="flex:1;min-width:260px;">
+                    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
+                        <div class="avatar" style="width:56px;height:56px;font-size:22px;" id="p-avatar">?</div>
+                        <div>
+                            <h2 id="p-name">...</h2>
+                            <div class="muted" id="p-email"></div>
+                        </div>
+                    </div>
+                    <div class="card-accent card" style="text-align:center;">
+                        <div style="font-size:13px;opacity:.9;">Bakiye</div>
+                        <div style="font-size:30px;font-weight:700;" id="p-balance">0</div>
+                        <div style="font-size:12px;opacity:.9;">Token</div>
+                    </div>
+                    <div class="row mt-16" style="text-align:center;">
+                        <div><div style="font-size:22px;font-weight:700;color:var(--turuncu-koyu)" id="p-bets">0</div><div class="muted" style="font-size:12px;">Bahis</div></div>
+                        <div><div style="font-size:22px;font-weight:700;color:var(--turuncu-koyu)" id="p-wins">0</div><div class="muted" style="font-size:12px;">Kazanılan</div></div>
+                        <div><div style="font-size:22px;font-weight:700;color:var(--turuncu-koyu)" id="p-created">0</div><div class="muted" style="font-size:12px;">Açtığı</div></div>
+                    </div>
+
+                    <h4 class="mt-24" style="margin-bottom:10px;">Şifre Değiştir</h4>
+                    <div class="field"><label>Mevcut şifre</label><input type="password" id="cur-pass"></div>
+                    <div class="field"><label>Yeni şifre (en az 6)</label><input type="password" id="new-pass"></div>
+                    <button class="btn btn-soft btn-block" onclick="changePassword()">Şifreyi Güncelle</button>
+                    <div class="form-msg" id="pass-msg"></div>
+                </div>
+
+                <!-- Bahis geçmişi -->
+                <div style="flex:2;min-width:300px;">
+                    <h3 style="margin-bottom:12px;">Bahis Geçmişim</h3>
+                    <div class="stack" id="my-bets"><div class="empty-state">Yükleniyor...</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="src/js/auth.js"></script>
+    <script src="src/js/profile.js"></script>
+</body>
+</html>

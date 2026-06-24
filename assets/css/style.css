@@ -1,0 +1,332 @@
+/* ======================================================
+   GirelimMi? — TASARIM SİSTEMİ (Renk & Tipografi)
+   Sadece :root değişkenleri kullanılır, doğrudan hex yazılmaz.
+   ====================================================== */
+:root {
+    --turuncu: #F97316;
+    --turuncu-koyu: #EA580C;
+    --koyu-antrasit: #1E293B;
+    --krem-beyaz: #FFFBF5;
+    --acik-gri: #F1F5F9;
+    --gri: #64748B;
+
+    /* Türetilmiş yardımcılar (yalnızca yukarıdaki paletten) */
+    --turuncu-soft: rgba(249, 115, 22, 0.12);
+    --antrasit-soft: rgba(30, 41, 59, 0.06);
+    --golge-sm: 0 1px 3px rgba(30, 41, 59, 0.08);
+    --golge-md: 0 6px 18px rgba(30, 41, 59, 0.10);
+    --golge-lg: 0 14px 40px rgba(30, 41, 59, 0.14);
+    --radius: 14px;
+    --radius-sm: 12px;
+    --radius-lg: 16px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
+html, body { height: 100%; }
+
+body {
+    background: var(--krem-beyaz);
+    color: var(--koyu-antrasit);
+    font-weight: 400;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 { color: var(--koyu-antrasit); font-weight: 700; line-height: 1.25; }
+h1 { font-size: 28px; }
+h2 { font-size: 22px; }
+h3 { font-size: 18px; }
+a { color: var(--turuncu); text-decoration: none; }
+a:hover { color: var(--turuncu-koyu); }
+
+.muted { color: var(--gri); }
+.text-turuncu { color: var(--turuncu); }
+
+/* ---------------- BUTONLAR ---------------- */
+.btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 12px 20px; border: none; border-radius: 50px;
+    font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 15px;
+    cursor: pointer; transition: 0.2s; line-height: 1;
+}
+.btn-primary { background: var(--turuncu); color: #fff; box-shadow: 0 6px 16px rgba(249,115,22,0.30); }
+.btn-primary:hover { background: var(--turuncu-koyu); transform: translateY(-1px); color: #fff; }
+.btn-ghost { background: transparent; color: var(--koyu-antrasit); border: 1px solid var(--acik-gri); }
+.btn-ghost:hover { background: var(--acik-gri); }
+.btn-soft { background: var(--turuncu-soft); color: var(--turuncu-koyu); }
+.btn-soft:hover { background: var(--turuncu); color: #fff; }
+.btn-danger { background: #fff; color: #b91c1c; border: 1px solid #fecaca; }
+.btn-danger:hover { background: #fef2f2; }
+.btn-block { width: 100%; }
+.btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+
+/* ---------------- FORM ---------------- */
+.field { margin-bottom: 18px; text-align: left; }
+.field label { display: block; margin-bottom: 7px; color: var(--gri); font-size: 13px; font-weight: 500; }
+.input, input[type="text"], input[type="email"], input[type="password"],
+input[type="number"], input[type="date"], input[type="time"],
+input[type="datetime-local"], select, textarea {
+    width: 100%; padding: 13px 15px; border-radius: var(--radius-sm);
+    border: 1px solid var(--acik-gri); background: #fff; color: var(--koyu-antrasit);
+    font-size: 15px; outline: none; transition: 0.2s; font-family: 'Poppins', sans-serif;
+}
+input::placeholder, textarea::placeholder { color: var(--gri); opacity: .8; }
+.input:focus, input:focus, select:focus, textarea:focus {
+    border-color: var(--turuncu); box-shadow: 0 0 0 3px var(--turuncu-soft);
+}
+
+/* ---------------- KART ---------------- */
+.card {
+    background: #fff; border: 1px solid var(--acik-gri);
+    border-radius: var(--radius-lg); box-shadow: var(--golge-sm); padding: 20px;
+}
+.card-accent { background: var(--turuncu); color: #fff; border: none; }
+.card-accent h1, .card-accent h2, .card-accent h3, .card-accent h4 { color: #fff; }
+
+/* İkon kutusu (turuncu zeminli) */
+.icon-box {
+    width: 44px; height: 44px; border-radius: var(--radius-sm);
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--turuncu); color: #fff; font-size: 18px; flex: none;
+}
+
+/* Rozet / etiket */
+.badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px;
+    border-radius: 50px; font-size: 12px; font-weight: 600; }
+.badge-turuncu { background: var(--turuncu-soft); color: var(--turuncu-koyu); }
+.badge-gri { background: var(--acik-gri); color: var(--gri); }
+
+/* ======================================================
+   AUTH SAYFALARI (login / kayıt)
+   ====================================================== */
+.auth-wrap {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px;
+}
+.auth-card {
+    width: 100%; max-width: 440px; background: #fff; border: 1px solid var(--acik-gri);
+    border-radius: 22px; padding: 36px 34px; box-shadow: var(--golge-lg); text-align: center;
+}
+.auth-logo { height: 70px; width: auto; margin: 0 auto 6px; display: block; }
+.auth-slogan { color: var(--gri); font-size: 14px; margin-bottom: 22px; }
+.auth-title { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+.auth-sub { color: var(--gri); font-size: 14px; margin-bottom: 26px; }
+.auth-foot { margin-top: 22px; font-size: 14px; color: var(--gri); }
+.auth-foot a { font-weight: 600; }
+.form-msg { font-size: 13px; margin-top: 14px; min-height: 18px; font-weight: 500; }
+.form-msg.error { color: #dc2626; }
+.form-msg.ok { color: #16a34a; }
+.link-btn { background: none; border: none; color: var(--turuncu); font-weight: 600;
+    cursor: pointer; font-size: 13px; font-family: 'Poppins', sans-serif; }
+.link-btn:hover { color: var(--turuncu-koyu); }
+
+/* ======================================================
+   UYGULAMA İSKELETİ (header + sidebar + main)
+   ====================================================== */
+.app { display: flex; min-height: 100vh; }
+
+.sidebar {
+    width: 250px; flex: none; background: var(--koyu-antrasit); color: var(--acik-gri);
+    padding: 22px 16px; display: flex; flex-direction: column; gap: 8px;
+    position: sticky; top: 0; height: 100vh; overflow-y: auto;
+}
+.sidebar-logo { display: flex; align-items: center; gap: 10px; padding: 4px 6px 18px; }
+.sidebar-logo img { height: 34px; width: auto; }
+.sidebar-logo .brand { font-weight: 700; font-size: 17px; color: #fff; }
+.sidebar h5 { color: var(--gri); font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+    font-weight: 600; margin: 14px 8px 6px; }
+.nav-item {
+    display: flex; align-items: center; gap: 12px; width: 100%;
+    padding: 11px 14px; border-radius: var(--radius-sm); border: none;
+    background: transparent; color: var(--acik-gri); font-size: 14px; font-weight: 500;
+    cursor: pointer; transition: 0.18s; text-align: left; font-family: 'Poppins', sans-serif;
+}
+.nav-item i { width: 18px; text-align: center; font-size: 15px; }
+.nav-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
+.nav-item.active { background: var(--turuncu); color: #fff; }
+.sidebar-foot { margin-top: auto; }
+
+.content { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+.topbar {
+    display: flex; align-items: center; gap: 14px; padding: 14px 24px;
+    background: #fff; border-bottom: 1px solid var(--acik-gri); position: sticky; top: 0; z-index: 30;
+}
+.topbar .spacer { flex: 1; }
+.balance-pill {
+    display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px;
+    background: var(--turuncu-soft); color: var(--turuncu-koyu); border-radius: 50px;
+    font-weight: 600; font-size: 14px; cursor: pointer; border: 1px solid transparent; transition:.2s;
+}
+.balance-pill:hover { border-color: var(--turuncu); }
+.icon-btn {
+    width: 40px; height: 40px; border-radius: var(--radius-sm); border: 1px solid var(--acik-gri);
+    background: #fff; color: var(--koyu-antrasit); cursor: pointer; font-size: 16px;
+    display: inline-flex; align-items: center; justify-content: center; position: relative; transition:.2s;
+}
+.icon-btn:hover { background: var(--acik-gri); }
+.user-chip { display: flex; align-items: center; gap: 9px; padding: 6px 8px 6px 6px;
+    border-radius: 50px; }
+.avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--turuncu); color: #fff;
+    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex:none;}
+.user-chip .uname { font-size: 14px; font-weight: 600; }
+
+.page { padding: 24px; flex: 1; }
+.page-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 18px; flex-wrap: wrap; }
+
+/* Notification badge */
+.dot-badge {
+    position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 5px;
+    background: var(--turuncu); color: #fff; border-radius: 50px; font-size: 10px; font-weight: 700;
+    display: none; align-items: center; justify-content: center; border: 2px solid #fff;
+}
+.dot-badge.show { display: flex; }
+
+/* ---------------- KATEGORİ FİLTRE ---------------- */
+.chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+.chip {
+    padding: 8px 14px; border-radius: 50px; border: 1px solid var(--acik-gri); background: #fff;
+    color: var(--gri); font-size: 13px; font-weight: 500; cursor: pointer; transition:.18s;
+    display: inline-flex; align-items: center; gap: 7px; font-family: 'Poppins', sans-serif;
+}
+.chip:hover { border-color: var(--turuncu); color: var(--turuncu-koyu); }
+.chip.active { background: var(--turuncu); border-color: var(--turuncu); color: #fff; }
+
+/* ---------------- MARKET GRID & KART ---------------- */
+.market-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
+.market-card {
+    background: #fff; border: 1px solid var(--acik-gri); border-radius: var(--radius-lg);
+    box-shadow: var(--golge-sm); padding: 18px; display: flex; flex-direction: column; gap: 12px; transition:.2s;
+}
+.market-card:hover { box-shadow: var(--golge-md); transform: translateY(-2px); }
+.market-card .mc-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.market-card .mc-title { font-size: 16px; font-weight: 600; color: var(--koyu-antrasit); }
+.market-card .mc-meta { display: flex; gap: 14px; font-size: 12px; color: var(--gri); flex-wrap: wrap; }
+.mc-status { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 50px; }
+.mc-status.aktif { background: rgba(22,163,74,.12); color: #16a34a; }
+.mc-status.yaklasan { background: var(--turuncu-soft); color: var(--turuncu-koyu); }
+.mc-status.kilitli { background: var(--antrasit-soft); color: var(--gri); }
+.mc-status.sonuclandi { background: var(--acik-gri); color: var(--gri); }
+
+.options { display: flex; flex-direction: column; gap: 8px; }
+.opt-row {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--radius-sm);
+    border: 1px solid var(--acik-gri); background: var(--krem-beyaz); cursor: pointer; transition:.18s; position: relative; overflow: hidden;
+}
+.opt-row:hover { border-color: var(--turuncu); }
+.opt-row.disabled { cursor: not-allowed; opacity: .65; }
+.opt-row.win { border-color: #16a34a; background: rgba(22,163,74,.08); }
+.opt-bar { position: absolute; left: 0; top: 0; bottom: 0; background: var(--turuncu-soft); z-index: 0; }
+.opt-name, .opt-pct { position: relative; z-index: 1; }
+.opt-name { font-size: 14px; font-weight: 600; flex: 1; }
+.opt-pct { font-size: 13px; font-weight: 700; color: var(--turuncu-koyu); }
+
+/* ---------------- LİDERLİK ---------------- */
+.lb-row { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border-bottom: 1px solid var(--acik-gri); }
+.lb-rank { width: 30px; font-weight: 700; color: var(--gri); text-align: center; }
+.lb-rank.top { color: var(--turuncu); }
+.lb-name { flex: 1; font-weight: 600; }
+.lb-bal { font-weight: 700; color: var(--turuncu-koyu); }
+
+/* ---------------- CANLI AKIŞ ---------------- */
+.feed-item { display: flex; gap: 10px; padding: 9px 11px; border-radius: var(--radius-sm);
+    background: var(--krem-beyaz); border: 1px solid var(--acik-gri); font-size: 12px; }
+.feed-item .fi-dot { color: var(--turuncu); }
+
+/* ======================================================
+   MODAL
+   ====================================================== */
+.modal-overlay {
+    position: fixed; inset: 0; background: rgba(30,41,59,0.55); backdrop-filter: blur(3px);
+    display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+    background: #fff; border-radius: var(--radius-lg); padding: 26px; width: 100%; max-width: 460px;
+    box-shadow: var(--golge-lg); max-height: 90vh; overflow-y: auto;
+}
+.modal-lg { max-width: 760px; }
+.modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.modal-close { background: none; border: none; font-size: 24px; color: var(--gri); cursor: pointer; line-height: 1; }
+.modal-close:hover { color: var(--koyu-antrasit); }
+
+/* Fiyat listesi (token al) */
+.price-row { display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 14px; border: 1px solid var(--acik-gri); border-radius: var(--radius-sm); margin-bottom: 8px; }
+.price-row .tl { font-weight: 600; }
+.price-row .tk { color: var(--turuncu-koyu); font-weight: 700; }
+.iban-box { background: var(--acik-gri); border-radius: var(--radius-sm); padding: 14px; margin-top: 12px; font-size: 14px; }
+.iban-box code { font-family: monospace; font-weight: 700; color: var(--koyu-antrasit); }
+
+/* ======================================================
+   SOHBET PANELİ
+   ====================================================== */
+.chat-panel {
+    position: fixed; bottom: 0; right: 24px; width: 330px; background: #fff;
+    border: 1px solid var(--acik-gri); border-bottom: none; border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    box-shadow: var(--golge-lg); z-index: 90; display: flex; flex-direction: column; overflow: hidden;
+}
+.chat-head { display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 14px; background: var(--koyu-antrasit); color: #fff; cursor: pointer; }
+.chat-head .ch-actions { display: flex; gap: 6px; }
+.chat-head button { background: rgba(255,255,255,.1); border: none; color: #fff; width: 26px; height: 26px;
+    border-radius: 7px; cursor: pointer; font-size: 12px; }
+.chat-tabs { display: flex; border-bottom: 1px solid var(--acik-gri); }
+.chat-tab { flex: 1; padding: 10px; background: none; border: none; cursor: pointer; font-size: 13px;
+    font-weight: 600; color: var(--gri); font-family: 'Poppins', sans-serif; }
+.chat-tab.active { color: var(--turuncu-koyu); box-shadow: inset 0 -2px 0 var(--turuncu); }
+.chat-body { height: 300px; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; background: var(--krem-beyaz); }
+.chat-msg { font-size: 13px; }
+.chat-msg .cm-name { font-weight: 600; color: var(--turuncu-koyu); margin-right: 5px; }
+.chat-input-row { display: flex; gap: 8px; padding: 10px; border-top: 1px solid var(--acik-gri); }
+.chat-input-row input { flex: 1; }
+.chat-panel.min .chat-body, .chat-panel.min .chat-tabs, .chat-panel.min .chat-input-row { display: none; }
+
+/* ---------------- BİLDİRİM DROPDOWN ---------------- */
+.dropdown { position: relative; }
+.dd-menu {
+    position: absolute; right: 0; top: 50px; width: 320px; background: #fff;
+    border: 1px solid var(--acik-gri); border-radius: var(--radius-lg); box-shadow: var(--golge-lg);
+    z-index: 50; display: none; overflow: hidden;
+}
+.dd-menu.show { display: block; }
+.dd-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid var(--acik-gri); }
+.dd-list { max-height: 360px; overflow-y: auto; }
+.noti { display: flex; flex-direction: column; gap: 3px; padding: 12px 14px; border-bottom: 1px solid var(--acik-gri); cursor: pointer; }
+.noti:hover { background: var(--krem-beyaz); }
+.noti.unread { background: var(--turuncu-soft); }
+.noti .nt-title { font-size: 13px; font-weight: 600; }
+.noti .nt-msg { font-size: 12px; color: var(--gri); }
+.noti .nt-time { font-size: 11px; color: var(--gri); }
+.empty-state { text-align: center; color: var(--gri); padding: 28px 16px; font-size: 13px; }
+
+/* ---------------- TABLO (admin) ---------------- */
+.table { width: 100%; border-collapse: collapse; }
+.table th { text-align: left; font-size: 12px; color: var(--gri); font-weight: 600; padding: 8px 10px; border-bottom: 2px solid var(--acik-gri); }
+.table td { padding: 10px; border-bottom: 1px solid var(--acik-gri); font-size: 13px; }
+
+/* ---------------- YARDIMCI ---------------- */
+.row { display: flex; gap: 14px; flex-wrap: wrap; }
+.row > * { flex: 1; min-width: 160px; }
+.stack { display: flex; flex-direction: column; gap: 14px; }
+.hidden { display: none !important; }
+.mt-8 { margin-top: 8px; } .mt-16 { margin-top: 16px; } .mt-24 { margin-top: 24px; }
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.toast-wrap { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 200; display: flex; flex-direction: column; gap: 8px; }
+.toast { background: var(--koyu-antrasit); color: #fff; padding: 12px 18px; border-radius: 50px; font-size: 14px; box-shadow: var(--golge-lg); animation: toastIn .25s; }
+.toast.ok { background: #16a34a; } .toast.err { background: #dc2626; } .toast.info { background: var(--turuncu); }
+@keyframes toastIn { from { opacity: 0; transform: translateY(10px); } }
+
+/* ---------------- RESPONSIVE ---------------- */
+@media (max-width: 900px) {
+    .sidebar { position: fixed; left: 0; top: 0; z-index: 60; transform: translateX(-100%); transition: .25s; box-shadow: var(--golge-lg); }
+    .sidebar.open { transform: translateX(0); }
+    .menu-toggle { display: inline-flex !important; }
+    .chat-panel { right: 0; left: 0; width: 100%; border-radius: 0; }
+    .user-chip .uname { display: none; }
+}
+.menu-toggle { display: none; }
+@media (min-width: 901px) { .menu-toggle { display: none; } .sidebar-backdrop { display: none !important; } }
+.sidebar-backdrop { position: fixed; inset: 0; background: rgba(30,41,59,.4); z-index: 55; display: none; }
+.sidebar-backdrop.show { display: block; }
