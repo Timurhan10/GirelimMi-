@@ -27,6 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
         startNotifications();
         startChat();
         startLiveFeed();
+        if (window.HorseRaceGame) window.HorseRaceGame.attach();   // At yarışı oyununu token sistemine bağla
 
         // URL ?tab= ile görünüm
         const tab = new URLSearchParams(location.search).get("tab");
@@ -75,7 +76,7 @@ function switchView(view) {
     if (el) el.style.display = "";
     document.querySelectorAll(".nav-item[data-view]").forEach(b =>
         b.classList.toggle("active", b.dataset.view === view));
-    const titles = { aktif: "GirelimMi?", gecmis: "Geçmiş", yarat: "Yarat", liderlik: "Liderlik" };
+    const titles = { aktif: "GirelimMi?", gecmis: "Geçmiş", yarat: "Yarat", liderlik: "Liderlik", oyunlar: "Oyunlar" };
     document.getElementById("page-title").textContent = titles[view] || "GirelimMi?";
     toggleSidebar(false);
     renderGrids();

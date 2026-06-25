@@ -50,7 +50,17 @@ service cloud.firestore {
              && request.resource.data.email == resource.data.email
              && request.resource.data.balance is number
              && request.resource.data.balance >= 0
-             && request.resource.data.balance <= resource.data.balance );
+             && request.resource.data.balance <= resource.data.balance )
+        // 🐎 At Yarışı kazancı: bakiye artışı YALNIZCA havuzdan çekilebilir (korunum => token üretilemez).
+        || ( me() == uid
+             && request.resource.data.isAdmin == resource.data.isAdmin
+             && request.resource.data.email == resource.data.email
+             && request.resource.data.balance is number
+             && request.resource.data.balance > resource.data.balance
+             && getAfter(/databases/$(database)/documents/gamePool/horseRace).data.value
+                == get(/databases/$(database)/documents/gamePool/horseRace).data.value
+                   - (request.resource.data.balance - resource.data.balance)
+             && getAfter(/databases/$(database)/documents/gamePool/horseRace).data.value >= 0 );
 
       allow delete: if isAdmin();
     }
@@ -180,6 +190,40 @@ service cloud.firestore {
       allow read: if isAdmin();
       allow create: if isAdmin();
       allow update, delete: if false;
+    }
+
+    // ================= AT YARIŞI — MERKEZİ ÖDÜL HAVUZU =================
+    // Korunum ilkesi: havuz ile oyuncu bakiyesi arasında token transfer edilir,
+    // ASLA üretilmez. Tek istisna: 24 saatte bir +1000 günlük destek.
+    match /gamePool/{id} {
+      allow read: if true;
+
+      // İlk oluşturma: 1000 ile başlar (lastDaily = sunucu zamanı).
+      allow create: if signedIn()
+        && request.resource.data.value == 1000
+        && request.resource.data.lastDaily == request.time;
+
+      allow update: if isAdmin()
+        // KAYBEDEN: havuz, oyuncunun bakiyesinden düşen kadar artar (lastDaily sabit).
+        || ( signedIn()
+             && request.resource.data.lastDaily == resource.data.lastDaily
+             && balAfter(me()) >= 0
+             && balAfter(me()) < balNow(me())
+             && request.resource.data.value == resource.data.value + (balNow(me()) - balAfter(me())) )
+        // KAZANAN: havuz, oyuncunun bakiyesine eklenen kadar azalır (>=0, lastDaily sabit).
+        || ( signedIn()
+             && request.resource.data.lastDaily == resource.data.lastDaily
+             && balAfter(me()) > balNow(me())
+             && request.resource.data.value >= 0
+             && request.resource.data.value == resource.data.value - (balAfter(me()) - balNow(me())) )
+        // GÜNLÜK DESTEK: +1000, 24 saatte bir (tek üretim noktası).
+        || ( signedIn()
+             && request.resource.data.value == resource.data.value + 1000
+             && request.resource.data.lastDaily == request.time
+             && ( resource.data.lastDaily == null
+                  || resource.data.lastDaily <= request.time - duration.value(24, 'h') ) );
+
+      allow delete: if isAdmin();
     }
   }
 }
