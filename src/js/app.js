@@ -8,7 +8,17 @@ const STATE = {
     view: "aktif",
     filter: "Tümü",
     leaderboard: [],
+    currentGroup: "genel", // 'genel' | groupId
+    myGroups: [],
+    currentGroupMembers: null, // grup seçiliyse üye uid listesi (liderlik kapsamı)
+    marketsUnsub: null,
 };
+
+// Liderlik/kapsam: bir kullanıcı seçili grupta mı?
+function inCurrentGroup(uid) {
+    if (STATE.currentGroup === "genel") return true;
+    return Array.isArray(STATE.currentGroupMembers) && STATE.currentGroupMembers.indexOf(uid) !== -1;
+}
 
 document.addEventListener("DOMContentLoaded", () => {
     requireAuth((user, profile) => {
@@ -20,8 +30,10 @@ document.addEventListener("DOMContentLoaded", () => {
         buildCategoryChips();
         buildCreateForm();
         buildTokenModal();
+        populateGroupSelectors();   // önce "Genel" görünsün
 
         listenUserDoc();
+        loadMyGroups();             // grupları yükle (seçicileri doldurur)
         listenMarkets();
         listenUsersIndex();
         startNotifications();
@@ -106,14 +118,19 @@ function filterCategory(cat) {
     renderGrids();
 }
 
-// ---------------- MARKET DİNLE & RENDER ----------------
+// ---------------- MARKET DİNLE & RENDER (gruba göre) ----------------
 function listenMarkets() {
-    db.collection("markets").onSnapshot((snap) => {
-        STATE.markets = {};
-        snap.forEach(doc => { STATE.markets[doc.id] = { id: doc.id, ...doc.data() }; });
-        renderGrids();
-        renderCreatorLeaderboard();
-    }, (err) => console.error("Market dinleme hatası:", err));
+    if (STATE.marketsUnsub) { STATE.marketsUnsub(); STATE.marketsUnsub = null; }
+    STATE.markets = {};
+    renderGrids();
+    STATE.marketsUnsub = db.collection("markets")
+        .where("groupId", "==", STATE.currentGroup)
+        .onSnapshot((snap) => {
+            STATE.markets = {};
+            snap.forEach(doc => { STATE.markets[doc.id] = { id: doc.id, ...doc.data() }; });
+            renderGrids();
+            renderCreatorLeaderboard();
+        }, (err) => console.error("Market dinleme hatası:", err));
 }
 
 function renderGrids() {
@@ -162,7 +179,7 @@ function renderTokenLeaderboard() {
     const el = document.getElementById("leaderboard");
     if (!el) return;
     const rows = Object.values(STATE.usersById)
-        .filter(u => !u.isAdmin)
+        .filter(u => !u.isAdmin && inCurrentGroup(u.uid))
         .sort((a, b) => (b.balance || 0) - (a.balance || 0))
         .slice(0, 20);
     el.innerHTML = rows.length

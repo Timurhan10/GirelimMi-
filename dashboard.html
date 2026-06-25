@@ -30,6 +30,7 @@
             <button class="nav-item" data-view="yarat" onclick="switchView('yarat')"><i class="fa-solid fa-plus"></i> Yarat</button>
             <button class="nav-item" data-view="liderlik" onclick="switchView('liderlik')"><i class="fa-solid fa-trophy"></i> Liderlik</button>
             <button class="nav-item" data-view="oyunlar" onclick="switchView('oyunlar')"><i class="fa-solid fa-horse-head"></i> Oyunlar</button>
+            <button class="nav-item" onclick="openGroupsModal()"><i class="fa-solid fa-users"></i> Gruplar</button>
 
             <h5>Hesap</h5>
             <a class="nav-item" href="profil.html"><i class="fa-solid fa-user"></i> Profilim</a>
@@ -46,6 +47,7 @@
             <div class="topbar">
                 <button class="icon-btn menu-toggle" onclick="toggleSidebar(true)"><i class="fa-solid fa-bars"></i></button>
                 <h2 id="page-title">GirelimMi?</h2>
+                <select id="group-selector" title="Grup" style="width:auto;max-width:200px;padding:9px 12px;" onchange="onGroupChange(this.value)"></select>
                 <div class="spacer"></div>
 
                 <button class="btn btn-soft" id="topbar-token-btn" onclick="openTokenModal()"><i class="fa-solid fa-coins"></i> Token Al</button>
@@ -112,6 +114,11 @@
                 <div class="card" style="max-width:720px;">
                     <h2 style="margin-bottom:4px;">GirelimMi? Oluştur</h2>
                     <p class="muted" style="margin-bottom:18px;">Soruyu, seçenekleri ve zamanları belirle; ilk bahsini yatırıp canlıya sür.</p>
+
+                    <div class="field">
+                        <label>Grup (kimler görecek?)</label>
+                        <select id="m-group"></select>
+                    </div>
 
                     <div class="row">
                         <div class="field" style="flex:1;">
@@ -292,8 +299,42 @@
         </div>
     </div>
 
+    <!-- MOVE MODAL (yalnız admin) -->
+    <div class="modal-overlay" id="move-modal">
+        <div class="modal">
+            <div class="modal-head">
+                <h3><i class="fa-solid fa-right-left"></i> Gruba Taşı</h3>
+                <button class="modal-close" onclick="closeMoveModal()">&times;</button>
+            </div>
+            <p class="muted" id="move-title"></p>
+            <div class="field mt-16">
+                <label>Hedef grup</label>
+                <select id="move-group"></select>
+            </div>
+            <button class="btn btn-primary btn-block mt-8" id="move-confirm" onclick="confirmMove()">Taşı</button>
+        </div>
+    </div>
+
+    <!-- GROUPS MODAL -->
+    <div class="modal-overlay" id="groups-modal">
+        <div class="modal modal-lg">
+            <div class="modal-head">
+                <h3><i class="fa-solid fa-users"></i> Gruplar</h3>
+                <button class="modal-close" onclick="closeGroupsModal()">&times;</button>
+            </div>
+            <p class="muted" style="margin-bottom:14px;">Arkadaş, aile gibi ayrı gruplar oluştur. Sadece grup üyeleri o grubun GirelimMi'lerini görür.</p>
+            <div class="row">
+                <button class="btn btn-primary" onclick="promptCreateGroup()"><i class="fa-solid fa-plus"></i> Grup Oluştur</button>
+                <button class="btn btn-soft" onclick="promptJoinGroup()"><i class="fa-solid fa-right-to-bracket"></i> Gruba Katıl (kod)</button>
+            </div>
+            <h4 class="mt-24" style="margin-bottom:10px;">Gruplarım</h4>
+            <div id="my-groups-list" class="stack"><div class="empty-state">Yükleniyor...</div></div>
+        </div>
+    </div>
+
     <script src="src/js/notifications.js"></script>
     <script src="src/js/chat.js"></script>
+    <script src="src/js/groups.js"></script>
     <script src="src/js/markets.js"></script>
     <script src="src/js/bets.js"></script>
     <script src="src/js/admin.js"></script>

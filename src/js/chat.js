@@ -1,12 +1,26 @@
 // ======================================================
-// GirelimMi? — CHAT.JS (genel + market sohbeti)
+// GirelimMi? — CHAT.JS (grup + market sohbeti)
+// "Genel" sekmesi = içinde bulunulan grubun sohbeti (group_{currentGroup}).
 // ======================================================
-let chatChannel = "global";
+let chatChannel = "global";       // 'global' (grup geneli) | 'market'
 let chatMarketId = null;
 let chatMarketTitle = "";
+let chatMarketGroupId = "genel";
 let chatUnsub = null;
 
 function startChat() { switchChat("global"); }
+
+function currentGroupForChat() {
+    return (typeof STATE !== "undefined" && STATE.currentGroup) ? STATE.currentGroup : "genel";
+}
+function currentChannelKey() {
+    if (chatChannel === "market" && chatMarketId) return "market_" + chatMarketId;
+    return "group_" + currentGroupForChat();
+}
+function currentChannelGroupId() {
+    if (chatChannel === "market" && chatMarketId) return chatMarketGroupId || "genel";
+    return currentGroupForChat();
+}
 
 function listenChannel(channelKey) {
     if (chatUnsub) chatUnsub();
@@ -28,11 +42,25 @@ function listenChannel(channelKey) {
 function switchChat(tab) {
     chatChannel = tab;
     document.querySelectorAll(".chat-tab").forEach(t => t.classList.toggle("active", t.dataset.ch === tab));
-    listenChannel(tab === "market" && chatMarketId ? "market_" + chatMarketId : "global");
+    updateGeneralTabLabel();
+    listenChannel(currentChannelKey());
+}
+
+function updateGeneralTabLabel() {
+    const gt = document.querySelector('.chat-tab[data-ch="global"]');
+    if (!gt) return;
+    const name = (typeof currentGroupName === "function") ? currentGroupName() : "Genel";
+    gt.innerHTML = (name === "Genel" ? "🌍 " : "👥 ") + escapeHtml(name);
+}
+
+// Grup değişince genel sohbeti yeni gruba göre yenile
+function reloadChatForGroup() {
+    if (chatChannel !== "market") switchChat("global");
 }
 
 function openMarketChat(marketId, title) {
     chatMarketId = marketId; chatMarketTitle = title;
+    chatMarketGroupId = (STATE.markets[marketId] && STATE.markets[marketId].groupId) || "genel";
     const tab = document.getElementById("chat-tab-market");
     tab.style.display = ""; tab.textContent = "📊 " + (title.length > 12 ? title.slice(0, 12) + "…" : title);
     document.getElementById("chat-panel").classList.remove("min");
@@ -45,11 +73,12 @@ async function sendChat() {
     const input = document.getElementById("chat-input");
     const text = input.value.trim();
     if (!text) return;
-    const channelKey = chatChannel === "market" && chatMarketId ? "market_" + chatMarketId : "global";
+    const channelKey = currentChannelKey();
+    const groupId = currentChannelGroupId();
     input.value = "";
     try {
         await db.collection("chat").add({
-            channel: channelKey, uid: STATE.user.uid,
+            channel: channelKey, groupId, uid: STATE.user.uid,
             nickname: STATE.profile.nickname || STATE.profile.email,
             text, createdAt: FieldValue.serverTimestamp(),
         });
@@ -65,7 +94,7 @@ function toggleChatMin() {
 async function clearChat() {
     if (!STATE.isAdmin) return;
     if (!confirm("Bu kanaldaki tüm mesajlar silinsin mi?")) return;
-    const channelKey = chatChannel === "market" && chatMarketId ? "market_" + chatMarketId : "global";
+    const channelKey = currentChannelKey();
     try {
         const snap = await db.collection("chat").where("channel", "==", channelKey).get();
         const batch = db.batch(); snap.forEach(d => batch.delete(d.ref)); await batch.commit();
@@ -78,3 +107,4 @@ window.openMarketChat = openMarketChat;
 window.sendChat = sendChat;
 window.toggleChatMin = toggleChatMin;
 window.clearChat = clearChat;
+window.reloadChatForGroup = reloadChatForGroup;

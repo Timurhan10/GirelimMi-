@@ -24,6 +24,17 @@ service cloud.firestore {
     function balAfter(uid) { return getAfter(/databases/$(database)/documents/users/$(uid)).data.balance; }
     function marketData(id) { return get(/databases/$(database)/documents/markets/$(id)).data; }
 
+    // ---- GRUP ÜYELİĞİ ----
+    function isMember(gid) {
+      return gid == 'genel'
+        || (signedIn() && exists(/databases/$(database)/documents/groups/$(gid)/members/$(me())));
+    }
+    function isGroupOwner(gid) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/groups/$(gid))
+        && get(/databases/$(database)/documents/groups/$(gid)).data.ownerUid == me();
+    }
+
     // ----------------- USERS -----------------
     match /users/{uid} {
       allow read: if signedIn();
@@ -91,13 +102,17 @@ service cloud.firestore {
 
     // ----------------- MARKETS (GirelimMi?) -----------------
     match /markets/{id} {
-      allow read: if true;
+      // Görünürlük: 'genel' herkese; grup marketleri yalnız üyelere.
+      allow read: if !("groupId" in resource.data)
+        || resource.data.groupId == 'genel'
+        || isMember(resource.data.groupId) || isAdmin();
 
       // Oluşturma: admin sınırsız (bakiye düşmeden açabilir).
-      // Diğer kullanıcılar: zamanlar tutarlı; ilk havuz bakiyeden düşülmüş olmalı.
+      // Diğer kullanıcılar: zamanlar tutarlı; ilk havuz bakiyeden düşülmüş olmalı; gruba üye olmalı.
       allow create: if isAdmin()
         || ( signedIn()
              && request.resource.data.createdBy == me()
+             && (request.resource.data.groupId == 'genel' || isMember(request.resource.data.groupId))
              && request.resource.data.resolved == false
              && request.resource.data.startsAt is timestamp
              && request.resource.data.bettingClosesAt is timestamp
@@ -128,6 +143,9 @@ service cloud.firestore {
              && request.resource.data.commissionRate == resource.data.commissionRate
              && request.resource.data.winningOption == resource.data.winningOption
              && request.resource.data.creatorNick == resource.data.creatorNick
+             && request.resource.data.groupId == resource.data.groupId
+             && request.resource.data.groupName == resource.data.groupName
+             && isMember(resource.data.groupId)
              && request.resource.data.totalPool > resource.data.totalPool
              && balAfter(me()) == balNow(me()) - (request.resource.data.totalPool - resource.data.totalPool)
              && balAfter(me()) >= 0 );
@@ -144,18 +162,20 @@ service cloud.firestore {
         && request.resource.data.amount > 0
         && request.time >= marketData(request.resource.data.marketId).startsAt
         && request.time < marketData(request.resource.data.marketId).bettingClosesAt
-        && marketData(request.resource.data.marketId).resolved == false;
+        && marketData(request.resource.data.marketId).resolved == false
+        && isMember(marketData(request.resource.data.marketId).groupId);
       allow update, delete: if isAdmin();
     }
 
-    // ----------------- CHAT -----------------
+    // ----------------- CHAT (gruba göre) -----------------
     match /chat/{id} {
-      allow read: if signedIn();
+      allow read: if signedIn() && isMember(resource.data.groupId);
       allow create: if signedIn()
         && request.resource.data.uid == me()
         && request.resource.data.text is string
         && request.resource.data.text.size() > 0
-        && request.resource.data.text.size() <= 200;
+        && request.resource.data.text.size() <= 200
+        && isMember(request.resource.data.groupId);
       allow update: if false;
       allow delete: if isAdmin();
     }
@@ -224,6 +244,33 @@ service cloud.firestore {
                   || resource.data.lastDaily <= request.time - duration.value(24, 'h') ) );
 
       allow delete: if isAdmin();
+    }
+
+    // ----------------- GROUPS -----------------
+    match /groups/{gid} {
+      allow read: if isMember(gid) || isAdmin();
+      allow create: if signedIn() && request.resource.data.ownerUid == me();
+      allow update: if isGroupOwner(gid) || isAdmin();
+      allow delete: if isGroupOwner(gid) || isAdmin();
+
+      match /members/{uid} {
+        allow read: if isMember(gid) || isAdmin();
+        // Kendini ekleyebilir (kodla katılım) ya da grup sahibi ekler.
+        allow create: if signedIn() && (uid == me() || isGroupOwner(gid));
+        allow update: if isGroupOwner(gid) || isAdmin();
+        // Kendi ayrılabilir veya sahip/admin çıkarır.
+        allow delete: if signedIn() && (uid == me() || isGroupOwner(gid) || isAdmin());
+      }
+    }
+
+    // ----------------- GROUP CODES (katılım kodu -> grup) -----------------
+    match /groupCodes/{code} {
+      allow get: if true;            // katılırken kod doğrulama
+      allow list: if isAdmin();
+      allow create: if signedIn()
+        && get(/databases/$(database)/documents/groups/$(request.resource.data.groupId)).data.ownerUid == me();
+      allow update: if false;
+      allow delete: if isAdmin() || isGroupOwner(resource.data.groupId);
     }
   }
 }
