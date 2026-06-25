@@ -293,6 +293,22 @@
         </div>
     </div>
 
+    <!-- MOVE MODAL (yalnız admin) -->
+    <div class="modal-overlay" id="move-modal">
+        <div class="modal">
+            <div class="modal-head">
+                <h3><i class="fa-solid fa-right-left"></i> Gruba Taşı</h3>
+                <button class="modal-close" onclick="closeMoveModal()">&times;</button>
+            </div>
+            <p class="muted" id="move-title"></p>
+            <div class="field mt-16">
+                <label>Hedef grup</label>
+                <select id="move-group"></select>
+            </div>
+            <button class="btn btn-primary btn-block mt-8" id="move-confirm" onclick="confirmMove()">Taşı</button>
+        </div>
+    </div>
+
     <!-- GROUPS MODAL -->
     <div class="modal-overlay" id="groups-modal">
         <div class="modal modal-lg">

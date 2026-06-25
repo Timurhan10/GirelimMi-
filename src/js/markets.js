@@ -50,6 +50,7 @@ function generateMarketCardHTML(m, now = Date.now()) {
         actions += `<button class="btn btn-primary" style="padding:8px 14px;font-size:13px;" onclick="openResolveModal('${m.id}')"><i class="fa-solid fa-gavel"></i> Sonuçlandır</button>`;
     }
     if (STATE.isAdmin) {
+        actions += `<button class="btn btn-ghost" style="padding:8px 12px;font-size:13px;" onclick="openMoveModal('${m.id}')" title="Gruba taşı"><i class="fa-solid fa-right-left"></i> Taşı</button>`;
         actions += `<button class="btn btn-danger" style="padding:8px 12px;font-size:13px;" onclick="deleteMarket('${m.id}')"><i class="fa-solid fa-trash"></i></button>`;
     }
 
@@ -204,6 +205,43 @@ async function deleteMarket(id) {
     if (!confirm("Bu GirelimMi? silinsin mi? (Bahisler iade edilmez)")) return;
     try { await db.collection("markets").doc(id).delete(); toast("Silindi.", "ok"); }
     catch (e) { console.error(e); toast("Silinemedi.", "err"); }
+}
+
+// ---------------- GRUBA TAŞI (yalnız admin) ----------------
+let moveMarketId = null;
+async function openMoveModal(id) {
+    if (!STATE.isAdmin) { toast("Bu işlemi sadece yönetici yapabilir.", "err"); return; }
+    moveMarketId = id;
+    const m = STATE.markets[id];
+    document.getElementById("move-title").textContent = m ? m.title : "";
+    const sel = document.getElementById("move-group");
+    sel.innerHTML = '<option value="genel">🌍 Genel</option>';
+    try {
+        const snap = await db.collection("groups").get();   // admin tüm grupları okuyabilir
+        snap.forEach(d => { const g = d.data(); sel.innerHTML += `<option value="${d.id}">${escapeHtml(g.name)}</option>`; });
+    } catch (e) { console.error("Gruplar yüklenemedi:", e); }
+    sel.value = (m && m.groupId) || "genel";
+    document.getElementById("move-modal").classList.add("show");
+}
+
+function closeMoveModal() {
+    document.getElementById("move-modal").classList.remove("show");
+    moveMarketId = null;
+}
+
+async function confirmMove() {
+    if (!STATE.isAdmin || !moveMarketId) return;
+    const sel = document.getElementById("move-group");
+    const gid = sel.value;
+    const gname = gid === "genel" ? "Genel" : sel.options[sel.selectedIndex].text;
+    const btn = document.getElementById("move-confirm");
+    if (btn) btn.disabled = true;
+    try {
+        await db.collection("markets").doc(moveMarketId).update({ groupId: gid, groupName: gname });
+        toast(`GirelimMi? "${gname}" grubuna taşındı.`, "ok");
+        closeMoveModal();
+    } catch (e) { console.error("Taşıma hatası:", e); toast("Taşınamadı.", "err"); }
+    finally { if (btn) btn.disabled = false; }
 }
 
 // ---------------- SONUÇLANDIRMA (admin) ----------------
