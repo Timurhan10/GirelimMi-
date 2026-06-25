@@ -55,7 +55,10 @@ function generateMarketCardHTML(m, now = Date.now()) {
 
     return `<div class="market-card">
         <div class="mc-top">
-            <span class="badge badge-turuncu">${escapeHtml(m.category || "Diğer")}</span>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                <span class="badge badge-turuncu">${escapeHtml(m.category || "Diğer")}</span>
+                ${m.groupId && m.groupId !== "genel" ? `<span class="badge badge-gri"><i class="fa-solid fa-users"></i> ${escapeHtml(m.groupName || "Grup")}</span>` : ""}
+            </div>
             <span class="mc-status ${statusCls}">${STATUS_LABEL[status]}</span>
         </div>
         <div class="mc-title">${escapeHtml(m.title)}</div>
@@ -135,6 +138,8 @@ async function createMarket() {
     const endV = document.getElementById("m-end").value;
     const choiceIdx = parseInt(document.getElementById("m-choice").value);
     const amount = parseInt(document.getElementById("m-bet").value);
+    const groupId = document.getElementById("m-group")?.value || "genel";
+    const groupName = groupId === "genel" ? "Genel" : (((STATE.myGroups || []).find(g => g.id === groupId) || {}).name || "Grup");
 
     if (!title) return toast("Başlık gir.", "err");
     if (names.length < APP_CONFIG.MIN_OPTIONS || names.some(n => !n)) return toast("Tüm seçenek adlarını doldur (en az 2).", "err");
@@ -167,6 +172,7 @@ async function createMarket() {
             }
             tx.set(marketRef, {
                 title, category, options, pools, totalPool: amount,
+                groupId, groupName,
                 seed: { uid: STATE.user.uid, nickname: STATE.profile.nickname || STATE.profile.email, optionKey: choiceKey, amount },
                 createdBy: STATE.user.uid,
                 creatorNick: STATE.profile.nickname || STATE.profile.email,
@@ -183,6 +189,7 @@ async function createMarket() {
         toast("GirelimMi? oluşturuldu! ⚡", "ok");
         document.getElementById("m-title").value = "";
         document.getElementById("m-bet").value = "";
+        if (groupId !== STATE.currentGroup && typeof onGroupChange === "function") onGroupChange(groupId);
         switchView("aktif");
     } catch (e) {
         console.error("Market oluşturma hatası:", e);
